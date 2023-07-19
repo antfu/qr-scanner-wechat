@@ -6,6 +6,9 @@ QR Code scanner in JavaScript, based on a WebAssembly build of [OpenCV](https://
 
 Ported and rewritten from [leidenglai/opencv-js-qrcode](https://github.com/leidenglai/opencv-js-qrcode) for modern browser build and easier usage. Huge thanks to [@leidenglai](https://github.com/leidenglai) for the previous work and research.
 
+- [🕹️ Basic playground demo](https://qrcode-wechat.netlify.app/)
+- [🛠️ Anthony's QR Toolkit](https://qrcode.antfu.me/#scan)
+
 ## Usage
 
 ```bash

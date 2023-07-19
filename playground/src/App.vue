@@ -76,10 +76,14 @@ async function onFileChange(e: Event) {
 <template>
   <main font-sans p="x-10 y-10" flex="~ col gap-4" max-w-150>
     <div mb-5>
-      <span font-light text-2xl>QR Code Scanner Playground</span> <span op50>for</span><br>
+      <span font-light text-2xl>Simple QR Scanner Playground</span><br>
+      <span op30 mr1>using</span>
       <a href="https://github.com/antfu/qrcode-opencv-wechat" target="_blank" font-mono hover-underline op75>qrcode-opencv-wechat</a>
-      <span op35 mx1>by</span>
+      <span op30 mx1>by</span>
       <a href="https://antfu.me" target="_blank" hover-underline op50>Anthony Fu</a>
+      <div mt2>
+        <a href="https://qrcode.antfu.me/#scan" target="_blank" hover-underline op50 mt2>👉 A more feature complete example</a>
+      </div>
     </div>
 
     <input type="file" accept="image/*" @change="onFileChange">
