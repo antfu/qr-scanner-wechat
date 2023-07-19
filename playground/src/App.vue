@@ -1,13 +1,25 @@
 <!-- eslint-disable no-console -->
 <script setup lang="ts">
 import type { ScanResult } from '../../src/index'
-import { scan } from '../../src/index'
+import { ready, scan } from '../../src/index'
 
 const canvasRect = ref<HTMLCanvasElement>()
 const canvasPreview = ref<HTMLCanvasElement>()
 const result = ref<ScanResult>()
 const selected = ref(false)
 const error = ref<any>()
+const loaded = ref(false)
+
+onMounted(() => {
+  ready()
+    .then(() => {
+      loaded.value = true
+    })
+    .catch((e) => {
+      error.value = e
+      console.error(e)
+    })
+})
 
 async function onFileChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -71,6 +83,11 @@ async function onFileChange(e: Event) {
     </div>
 
     <input type="file" accept="image/*" @change="onFileChange">
+    <template v-if="error">
+      <div class="bg-red:10 text-red" p5 font-bold>
+        {{ error }}
+      </div>
+    </template>
     <template v-if="selected">
       <div :class="result?.text ? 'bg-green:10 text-green' : 'text-orange bg-orange:10 '" p5 font-bold>
         {{ result?.text || '(No result)' }}
@@ -78,9 +95,13 @@ async function onFileChange(e: Event) {
       <canvas ref="canvasPreview" border="~ gray/50 rounded-lg" />
       <canvas v-show="result?.text" ref="canvasRect" border="~ gray/50 rounded-lg" w-50 />
     </template>
-    <template v-else>
+    <div v-else italic op35>
       Select a QR code image to scan
-    </template>
+    </div>
+
+    <div v-if="!loaded" font-mono mb-5>
+      <span animate-pulse>Loading models...</span>
+    </div>
   </main>
 </template>
 

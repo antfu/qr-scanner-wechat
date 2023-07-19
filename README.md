@@ -18,7 +18,7 @@ import { scan } from 'qrcode-opencv-wechat'
 const result = await scan(canvas) // Or ImageElement
 ```
 
-Around **6.0MB** of WebAssembly and models will be loaded upon the first call of `scan`.
+Upon the first call of `scan`, around **3.5MB gzipped** of WebAssembly and models will be loaded asynchronously.
 
 You can also preload them with:
 
