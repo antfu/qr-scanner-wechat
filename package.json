@@ -45,6 +45,7 @@
     "start": "esno src/index.ts",
     "test": "vitest",
     "play": "nr -C playground dev",
+    "play:build": "nr -C playground build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

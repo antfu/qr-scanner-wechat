@@ -21,8 +21,7 @@ export interface ScanOptions {
 
 /* eslint-disable new-cap */
 async function importOpenCV(): Promise<InternalObject> {
-  // @ts-expect-error anyway
-  const cv = await import('./assets/opencv.js').then(r => r.cv)
+  const cv = await import('./wasm').then(r => r.cv)
   await cv.ready
   const qrcode_detector = await loadModels(cv)
   return {
@@ -82,7 +81,7 @@ export async function scan(input: ImageData | HTMLCanvasElement | HTMLImageEleme
 }
 
 async function loadModels(cv: any) {
-  const models = await import('./assets/models')
+  const models = await import('./wasm')
 
   cv.FS_createDataFile('/', 'detect.prototxt', models.detect_prototxt, true, false, false)
   cv.FS_createDataFile('/', 'detect.caffemodel', models.detect_caffemodel, true, false, false)
