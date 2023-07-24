@@ -32,6 +32,44 @@ await ready()
 const result = await scan(canvas)
 ```
 
+### Stream
+
+In case you want to scan with streams like camera inputs, here is some code snippet for reference
+
+```html
+<video id="video">
+``` 
+
+```ts
+import { scan } from 'qrcode-opencv-wechat'
+
+const stream = await navigator.mediaDevices.getUserMedia({
+  audio: false,
+  video: {
+    width: 512,
+    height: 512,
+  },
+})
+
+const video = document.getElementById('video')
+video.srcObject = stream
+video.play()
+
+async function scanFrame() {
+  const canvas = document.createElement('canvas')
+  canvas.width = video.value.videoWidth
+  canvas.height = video.value.videoHeight
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(videoEl.value!, 0, 0, canvas.width, canvas.height)
+  const result = await scan(canvas)
+
+  if (result?.text)
+    alert(result?.text)
+}
+
+setInterval(scanFrame, 100) // scan one frame every 100ms
+```
+
 ## Sponsors
 
 <p align="center">
