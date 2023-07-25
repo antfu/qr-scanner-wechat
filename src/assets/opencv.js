@@ -451,50 +451,6 @@ export const cv = (() => {
   function isFileURI(filename) {
     return filename.startsWith('file://')
   }
-  const wasmBinaryFile = _wasm
-  function getBinary(file) {
-    try {
-      if (file == wasmBinaryFile && wasmBinary) return new Uint8Array(wasmBinary)
-
-      const binary = tryParseAsDataURI(file)
-      if (binary) return binary
-
-      if (readBinary) return readBinary(file)
-      else throw 'both async and sync fetching of the wasm failed'
-    } catch (err) {
-      abort(err)
-    }
-  }
-  function getBinaryPromise() {
-    if (!wasmBinary && (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER)) {
-      if (typeof fetch == 'function' && !isFileURI(wasmBinaryFile)) {
-        return fetch(wasmBinaryFile, { credentials: 'same-origin' })
-          .then((response) => {
-            if (!response.ok) throw `failed to load wasm binary file at '${wasmBinaryFile}'`
-
-            return response.arrayBuffer()
-          })
-          .catch(() => {
-            return getBinary(wasmBinaryFile)
-          })
-      } else {
-        if (readAsync) {
-          return new Promise((resolve, reject) => {
-            readAsync(
-              wasmBinaryFile,
-              (response) => {
-                resolve(new Uint8Array(response))
-              },
-              reject
-            )
-          })
-        }
-      }
-    }
-    return Promise.resolve().then(() => {
-      return getBinary(wasmBinaryFile)
-    })
-  }
   function createWasm() {
     const info = { a: asmLibraryArg }
     function receiveInstance(instance, module) {
@@ -511,31 +467,14 @@ export const cv = (() => {
       receiveInstance(result.instance)
     }
     function instantiateArrayBuffer(receiver) {
-      return getBinaryPromise()
-        .then((binary) => {
-          return WebAssembly.instantiate(binary, info)
-        })
-        .then((instance) => {
-          return instance
-        })
+      return WebAssembly.instantiate(intArrayFromBase64(_wasm), info)
         .then(receiver, (reason) => {
           err(`failed to asynchronously prepare wasm: ${reason}`)
           abort(reason)
         })
     }
     function instantiateAsync() {
-      if (!wasmBinary && typeof WebAssembly.instantiateStreaming == 'function' && !isDataURI(wasmBinaryFile) && !isFileURI(wasmBinaryFile) && typeof fetch == 'function') {
-        return fetch(wasmBinaryFile, { credentials: 'same-origin' }).then((response) => {
-          const result = WebAssembly.instantiateStreaming(response, info)
-          return result.then(receiveInstantiationResult, (reason) => {
-            err(`wasm streaming compile failed: ${reason}`)
-            err('falling back to ArrayBuffer instantiation')
-            return instantiateArrayBuffer(receiveInstantiationResult)
-          })
-        })
-      } else {
-        return instantiateArrayBuffer(receiveInstantiationResult)
-      }
+      return instantiateArrayBuffer(receiveInstantiationResult)
     }
     if (Module.instantiateWasm) {
       try {
@@ -1833,22 +1772,6 @@ export const cv = (() => {
       },
     },
   }
-  function asyncLoad(url, onload, onerror, noRunDep) {
-    const dep = !noRunDep ? getUniqueRunDependency(`al ${url}`) : ''
-    readAsync(
-      url,
-      (arrayBuffer) => {
-        assert(arrayBuffer, `Loading data file "${url}" failed (no arrayBuffer).`)
-        onload(new Uint8Array(arrayBuffer))
-        if (dep) removeRunDependency(dep)
-      },
-      (event) => {
-        if (onerror) onerror()
-        else throw `Loading data file "${url}" failed.`
-      }
-    )
-    if (dep) addRunDependency(dep)
-  }
   var FS = {
     root: null,
     mounts: [],
@@ -3037,8 +2960,7 @@ export const cv = (() => {
         finish(byteArray)
       }
       addRunDependency(dep)
-      if (typeof url == 'string') asyncLoad(url, (byteArray) => processData(byteArray), onerror)
-      else processData(url)
+      processData(url)
     },
     indexedDB: () => {
       return window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB
