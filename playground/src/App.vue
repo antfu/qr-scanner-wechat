@@ -78,7 +78,7 @@ async function onFileChange(e: Event) {
     <div mb-5>
       <span font-light text-2xl>Simple QR Scanner Playground</span><br>
       <span op30 mr1>using</span>
-      <a href="https://github.com/antfu/qrcode-opencv-wechat" target="_blank" font-mono hover-underline op75>qrcode-opencv-wechat</a>
+      <a href="https://github.com/antfu/qr-scanner-wechat" target="_blank" font-mono hover-underline op75>qr-scanner-wechat</a>
       <span op30 mx1>by</span>
       <a href="https://antfu.me" target="_blank" hover-underline op50>Anthony Fu</a>
       <div mt2>

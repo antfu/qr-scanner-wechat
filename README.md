@@ -1,8 +1,8 @@
-# qrcode-opencv-wechat
+# qr-scanner-wechat
 
-[![NPM version](https://img.shields.io/npm/v/qrcode-opencv-wechat?color=a1b858&label=)](https://www.npmjs.com/package/qrcode-opencv-wechat)
+[![NPM version](https://img.shields.io/npm/v/qr-scanner-wechat?color=a1b858&label=)](https://www.npmjs.com/package/qr-scanner-wechat)
 
-QR Code scanner in JavaScript, based on a WebAssembly build of [OpenCV](https://opencv.org/) with [WeChat QR Code Scanner](https://docs.opencv.org/4.5.4/d5/d04/classcv_1_1wechat__qrcode_1_1WeChatQRCode.html). Provides a much better detection rate and error tolerance.
+QR Code scanner for JavaScript, based on a WebAssembly build of [OpenCV](https://opencv.org/) and [WeChat QR Code Scanner](https://docs.opencv.org/4.5.4/d5/d04/classcv_1_1wechat__qrcode_1_1WeChatQRCode.html). Provides a much better detection rate and error tolerance.
 
 Ported and rewritten from [leidenglai/opencv-js-qrcode](https://github.com/leidenglai/opencv-js-qrcode) for modern browser build and easier usage. Huge thanks to [@leidenglai](https://github.com/leidenglai) for the previous work and research.
 
@@ -12,11 +12,11 @@ Ported and rewritten from [leidenglai/opencv-js-qrcode](https://github.com/leide
 ## Usage
 
 ```bash
-npm i qrcode-opencv-wechat
+npm i qr-scanner-wechat
 ```
 
 ```ts 
-import { scan } from 'qrcode-opencv-wechat'
+import { scan } from 'qr-scanner-wechat'
 
 const result = await scan(canvas) // Or ImageElement
 ```
@@ -26,7 +26,7 @@ Upon the first call of `scan`, around **3.5MB gzipped** of WebAssembly and model
 You can also preload them with:
 
 ```ts 
-import { ready, scan } from 'qrcode-opencv-wechat'
+import { ready, scan } from 'qr-scanner-wechat'
 
 await ready()
 const result = await scan(canvas)
@@ -41,7 +41,7 @@ In case you want to scan with streams like camera inputs, here is some code snip
 ``` 
 
 ```ts
-import { scan } from 'qrcode-opencv-wechat'
+import { scan } from 'qr-scanner-wechat'
 
 const stream = await navigator.mediaDevices.getUserMedia({
   audio: false,
