@@ -35,6 +35,18 @@ interface InternalObject {
   qrcode_detector: any
 }
 
+export interface ImageDataLike {
+  data: Uint8ClampedArray
+  width: number
+  height: number
+}
+
+export type ImageSource =
+  | ImageDataLike
+  | ImageData
+  | HTMLCanvasElement
+  | HTMLImageElement
+
 let _promise: Promise<InternalObject>
 
 async function getOpenCV() {
@@ -47,7 +59,7 @@ export async function ready() {
   await getOpenCV()
 }
 
-export async function scan(input: ImageData | HTMLCanvasElement | HTMLImageElement, options: ScanOptions = {}): Promise<ScanResult> {
+export async function scan(input: ImageSource, options: ScanOptions = {}): Promise<ScanResult> {
   const { cv, qrcode_detector } = await getOpenCV()
   const inputImage = cv.imread(input, cv.IMREAD_GRAYSCALE)
   const points_vec = new cv.MatVector()

@@ -5547,26 +5547,29 @@ export const cv = (() => {
   if (typeof Module.FS === 'undefined' && typeof FS !== 'undefined') Module.FS = FS
 
   Module.imread = function (imageSource) {
-    let img = null
-    if (typeof imageSource === 'string') img = document.getElementById(imageSource)
-    else img = imageSource
+    let img = imageSource
+    let imgData
 
-    let canvas = null
-    let ctx = null
-    if (img instanceof HTMLImageElement) {
-      canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0, img.width, img.height)
-    } else if (img instanceof HTMLCanvasElement) {
-      canvas = img
-      ctx = canvas.getContext('2d')
+    if (imageSource?.data instanceof Uint8ClampedArray) {
+      imgData = imageSource
     } else {
-      throw new Error('Please input the valid canvas or img id.')
-      return
+      let canvas = null
+      let ctx = null
+      if (img instanceof HTMLImageElement) {
+        canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, img.width, img.height)
+      } else if (img instanceof HTMLCanvasElement) {
+        canvas = img
+        ctx = canvas.getContext('2d')
+      } else {
+        throw new Error('Please input the valid canvas or img id.')
+        return
+      }
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     }
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     return cv.matFromImageData(imgData)
   }
   Module.imshow = function (canvasSource, mat) {

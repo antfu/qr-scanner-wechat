@@ -61,6 +61,7 @@
     "lint-staged": "^13.2.3",
     "pnpm": "^8.6.9",
     "rimraf": "^5.0.1",
+    "sharp": "^0.32.4",
     "simple-git-hooks": "^2.8.1",
     "typescript": "^5.1.6",
     "unbuild": "^1.2.1",
