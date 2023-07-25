@@ -79,14 +79,19 @@ import { scan } from 'qrcode-openev-wechat'
 import sharp from 'sharp'
 
 const image = sharp('/path/to/image.png') // or Buffer, anything sharp supports
+
+const { data, info } = await image
+// .resize(1000) // you can resize first to improve the performance
   .ensureAlpha()
   .raw()
+  .toBuffer({
+    resolveWithObject: true,
+  })
 
-const metadata = await image.metadata()
 const result = await scan({
-  data: Uint8ClampedArray.from(await image.toBuffer()),
-  width: metadata.width,
-  height: metadata.height,
+  data: Uint8ClampedArray.from(data),
+  width: info.width,
+  height: info.height,
 })
 
 console.log(result?.text)
