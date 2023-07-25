@@ -1,8 +1,6 @@
 import { _wasm } from './wasm'
 
 export const cv = (() => {
-  let _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined
-  if (typeof __filename !== 'undefined') _scriptDir = _scriptDir || __filename
   const cv = {}
   const Module = typeof cv != 'undefined' ? cv : {}
   let readyPromiseResolve, readyPromiseReject
@@ -10,8 +8,6 @@ export const cv = (() => {
     readyPromiseResolve = resolve
     readyPromiseReject = reject
   })
-  let moduleOverrides = Object.assign({}, Module)
-  let arguments_ = []
   let thisProgram = './this.program'
   let quit_ = (status, toThrow) => {
     throw toThrow
@@ -19,145 +15,26 @@ export const cv = (() => {
   const ENVIRONMENT_IS_WEB = typeof window == 'object'
   const ENVIRONMENT_IS_WORKER = typeof importScripts == 'function'
   const ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string'
-  let scriptDirectory = ''
-  function locateFile(path) {
-    if (Module.locateFile) return Module.locateFile(path, scriptDirectory)
-
-    return scriptDirectory + path
-  }
-  let read_, readAsync, readBinary, setWindowTitle
   function logExceptionOnExit(e) {
     if (e instanceof ExitStatus) return
     const toLog = e
     err(`exiting due to exception: ${toLog}`)
   }
   let fs
-  let nodePath
-  let requireNodeFS
   if (ENVIRONMENT_IS_NODE) {
-    if (ENVIRONMENT_IS_WORKER) scriptDirectory = `${require('path').dirname(scriptDirectory)}/`
-    else scriptDirectory = `${__dirname}/`
-
-    requireNodeFS = () => {
-      if (!nodePath) {
-        fs = require('fs')
-        nodePath = require('path')
-      }
-    }
-    read_ = function shell_read(filename, binary) {
-      const ret = tryParseAsDataURI(filename)
-      if (ret) return binary ? ret : ret.toString()
-
-      requireNodeFS()
-      filename = nodePath.normalize(filename)
-      return fs.readFileSync(filename, binary ? undefined : 'utf8')
-    }
-    readBinary = (filename) => {
-      let ret = read_(filename, true)
-      if (!ret.buffer) ret = new Uint8Array(ret)
-
-      return ret
-    }
-    readAsync = (filename, onload, onerror) => {
-      const ret = tryParseAsDataURI(filename)
-      if (ret) onload(ret)
-
-      requireNodeFS()
-      filename = nodePath.normalize(filename)
-      fs.readFile(filename, (err, data) => {
-        if (err) onerror(err)
-        else onload(data.buffer)
-      })
-    }
-    if (process.argv.length > 1) thisProgram = process.argv[1].replace(/\\/g, '/')
-
-    arguments_ = process.argv.slice(2)
     process.on('uncaughtException', (ex) => {
       if (!(ex instanceof ExitStatus)) throw ex
     })
     process.on('unhandledRejection', (reason) => {
       throw reason
     })
-    quit_ = (status, toThrow) => {
-      if (keepRuntimeAlive()) {
-        process.exitCode = status
-        throw toThrow
-      }
-      logExceptionOnExit(toThrow)
-      process.exit(status)
-    }
     Module.inspect = function () {
       return '[Emscripten Module object]'
     }
-  } else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-    if (ENVIRONMENT_IS_WORKER) scriptDirectory = self.location.href
-    else if (typeof document != 'undefined' && document.currentScript) scriptDirectory = document.currentScript.src
-
-    if (_scriptDir) scriptDirectory = _scriptDir
-
-    if (scriptDirectory.indexOf('blob:') !== 0) scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, '').lastIndexOf('/') + 1)
-    else scriptDirectory = ''
-
-    {
-      read_ = (url) => {
-        try {
-          const xhr = new XMLHttpRequest()
-          xhr.open('GET', url, false)
-          xhr.send(null)
-          return xhr.responseText
-        } catch (err) {
-          const data = tryParseAsDataURI(url)
-          if (data) return intArrayToString(data)
-
-          throw err
-        }
-      }
-      if (ENVIRONMENT_IS_WORKER) {
-        readBinary = (url) => {
-          try {
-            const xhr = new XMLHttpRequest()
-            xhr.open('GET', url, false)
-            xhr.responseType = 'arraybuffer'
-            xhr.send(null)
-            return new Uint8Array(xhr.response)
-          } catch (err) {
-            const data = tryParseAsDataURI(url)
-            if (data) return data
-
-            throw err
-          }
-        }
-      }
-      readAsync = (url, onload, onerror) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('GET', url, true)
-        xhr.responseType = 'arraybuffer'
-        xhr.onload = () => {
-          if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) {
-            onload(xhr.response)
-            return
-          }
-          const data = tryParseAsDataURI(url)
-          if (data) {
-            onload(data.buffer)
-            return
-          }
-          onerror()
-        }
-        xhr.onerror = onerror
-        xhr.send(null)
-      }
-    }
-    setWindowTitle = (title) => (document.title = title)
-  } else {
   }
   const out = Module.print || console.log.bind(console)
   var err = Module.printErr || console.warn.bind(console)
-  Object.assign(Module, moduleOverrides)
-  moduleOverrides = null
-  if (Module.arguments) arguments_ = Module.arguments
   if (Module.thisProgram) thisProgram = Module.thisProgram
-  if (Module.quit) quit_ = Module.quit
   function warnOnce(text) {
     if (!warnOnce.shown) warnOnce.shown = {}
     if (!warnOnce.shown[text]) {
@@ -467,11 +344,10 @@ export const cv = (() => {
       receiveInstance(result.instance)
     }
     function instantiateArrayBuffer(receiver) {
-      return WebAssembly.instantiate(intArrayFromBase64(_wasm), info)
-        .then(receiver, (reason) => {
-          err(`failed to asynchronously prepare wasm: ${reason}`)
-          abort(reason)
-        })
+      return WebAssembly.instantiate(intArrayFromBase64(_wasm), info).then(receiver, (reason) => {
+        err(`failed to asynchronously prepare wasm: ${reason}`)
+        abort(reason)
+      })
     }
     function instantiateAsync() {
       return instantiateArrayBuffer(receiveInstantiationResult)
@@ -2535,37 +2411,6 @@ export const cv = (() => {
 
       return stream.stream_ops.ioctl(stream, cmd, arg)
     },
-    readFile: (path, opts = {}) => {
-      opts.flags = opts.flags || 0
-      opts.encoding = opts.encoding || 'binary'
-      if (opts.encoding !== 'utf8' && opts.encoding !== 'binary') throw new Error(`Invalid encoding type "${opts.encoding}"`)
-
-      let ret
-      const stream = FS.open(path, opts.flags)
-      const stat = FS.stat(path)
-      const length = stat.size
-      const buf = new Uint8Array(length)
-      FS.read(stream, buf, 0, length, 0)
-      if (opts.encoding === 'utf8') ret = UTF8ArrayToString(buf, 0)
-      else if (opts.encoding === 'binary') ret = buf
-
-      FS.close(stream)
-      return ret
-    },
-    writeFile: (path, data, opts = {}) => {
-      opts.flags = opts.flags || 577
-      const stream = FS.open(path, opts.flags, opts.mode)
-      if (typeof data == 'string') {
-        const buf = new Uint8Array(lengthBytesUTF8(data) + 1)
-        const actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length)
-        FS.write(stream, buf, 0, actualNumBytes, undefined, opts.canOwn)
-      } else if (ArrayBuffer.isView(data)) {
-        FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn)
-      } else {
-        throw new TypeError('Unsupported data type')
-      }
-      FS.close(stream)
-    },
     cwd: () => FS.currentPath,
     chdir: (path) => {
       const lookup = FS.lookupPath(path, { follow: true })
@@ -2806,13 +2651,6 @@ export const cv = (() => {
         throw new TypeError(
           'Lazy loading should have been performed (contents set) in createLazyFile, but it was not. Lazy loading only works in web workers. Use --embed-file or --preload-file in emcc on the main thread.'
         )
-      } else if (read_) {
-        try {
-          obj.contents = intArrayFromString(read_(obj.url), true)
-          obj.usedBytes = obj.contents.length
-        } catch (e) {
-          throw new FS.ErrnoError(29)
-        }
       } else {
         throw new Error('Cannot load without read() or XMLHttpRequest.')
       }
@@ -4939,8 +4777,7 @@ export const cv = (() => {
     }
     return newDate
   }
-  
-  
+
   Module.requestFullscreen = function Module_requestFullscreen(lockPointer, resizeCanvas) {
     Browser.requestFullscreen(lockPointer, resizeCanvas)
   }
@@ -5209,7 +5046,7 @@ export const cv = (() => {
     if (!calledRun) dependenciesFulfilled = runCaller
   }
   function run(args) {
-    args = args || arguments_
+    args = args
     if (runDependencies > 0) return
 
     preRun()
