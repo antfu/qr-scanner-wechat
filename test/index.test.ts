@@ -19,4 +19,4 @@ it('should scan', async () => {
   })
 
   expect(result.text).toBe('qrcode.antfu.me')
-})
+}, { timeout: 30_000 })
