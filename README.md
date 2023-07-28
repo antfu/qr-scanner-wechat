@@ -21,7 +21,7 @@ import { scan } from 'qr-scanner-wechat'
 const result = await scan(canvas) // Or ImageElement
 ```
 
-Upon the first call of `scan`, around **3.5MB gzipped** of WebAssembly and models will be loaded asynchronously.
+Upon the first call of `scan`, around **2.5MB gzipped** of WebAssembly and models will be loaded asynchronously.
 
 You can also preload them with:
 
