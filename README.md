@@ -57,10 +57,10 @@ video.play()
 
 async function scanFrame() {
   const canvas = document.createElement('canvas')
-  canvas.width = video.value.videoWidth
-  canvas.height = video.value.videoHeight
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
   const ctx = canvas.getContext('2d')
-  ctx.drawImage(videoEl.value!, 0, 0, canvas.width, canvas.height)
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
   const result = await scan(canvas)
 
   if (result?.text)
