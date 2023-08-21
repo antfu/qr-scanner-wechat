@@ -97,7 +97,7 @@ async function loadModels(cv: any) {
 
   cv.FS_createDataFile('/', 'detect.prototxt', models.detect_prototxt, true, false, false)
   cv.FS_createDataFile('/', 'detect.caffemodel', models.detect_caffemodel, true, false, false)
-  cv.FS_createDataFile('/', 'sr.prototxt', models.detect_prototxt, true, false, false)
+  cv.FS_createDataFile('/', 'sr.prototxt', models.sr_prototxt, true, false, false)
   cv.FS_createDataFile('/', 'sr.caffemodel', models.sr_caffemodel, true, false, false)
 
   const qrcode_detector = new cv.wechat_qrcode_WeChatQRCode(
